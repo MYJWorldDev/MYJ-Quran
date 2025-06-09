@@ -22,7 +22,7 @@ import com.yousufjamil.myjquran.data.DataSource
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun HomeScreen() {
-//    val navController = DataSource.navController
+    val navController = DataSource.navController
 
     val homeScreenItemList = listOf(
         HomeScreenItemData(
@@ -30,7 +30,7 @@ fun HomeScreen() {
             description = "Resume where you left off.",
             icon = Icons.Default.DateRange,
             onClick = {
-//                navController.navigate("quran")
+                navController.navigate("quran")
             }
         ),
         HomeScreenItemData(
@@ -38,7 +38,7 @@ fun HomeScreen() {
             description = "View your bookmarks.",
             icon = Icons.Default.DateRange,
             onClick = {
-//                navController.navigate("bookmarks")
+                navController.navigate("bookmarks")
             }
         ),
         HomeScreenItemData(
@@ -46,7 +46,7 @@ fun HomeScreen() {
             description = "Choose surah to read.",
             icon = Icons.Default.DateRange,
             onClick = {
-//                navController.navigate("surahSelect")
+                navController.navigate("surahSelect")
             }
         ),
         HomeScreenItemData(
@@ -54,7 +54,7 @@ fun HomeScreen() {
             description = "Change your settings.",
             icon = Icons.Default.DateRange,
             onClick = {
-//                navController.navigate("settings")
+                navController.navigate("settings")
             }
         )
     )
