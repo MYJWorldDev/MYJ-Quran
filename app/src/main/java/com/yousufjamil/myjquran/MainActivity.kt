@@ -5,8 +5,19 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -17,6 +28,7 @@ import com.yousufjamil.myjquran.accessories.jsondecode.getJsonDecodedQuran
 import com.yousufjamil.myjquran.data.DataSource
 import com.yousufjamil.myjquran.data.database.DatabaseProvider
 import com.yousufjamil.myjquran.data.database.MYJQuranDB
+import com.yousufjamil.myjquran.featurescreens.AboutScreen
 import com.yousufjamil.myjquran.featurescreens.BookmarksScreen
 import com.yousufjamil.myjquran.featurescreens.QuranScreen
 import com.yousufjamil.myjquran.featurescreens.SettingsScreen
@@ -27,6 +39,8 @@ class MainActivity : ComponentActivity() {
     lateinit var navController: NavHostController
     lateinit var database: MYJQuranDB
     lateinit var context: Context
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +60,14 @@ class MainActivity : ComponentActivity() {
             }
 
             MYJQuranTheme {
-                Navigation(navController = navController)
+                Column (
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0xFF607D94))
+                ) {
+                    Spacer(modifier = Modifier.padding(top = 40.dp))
+                    Navigation(navController = navController)
+                }
             }
         }
     }
@@ -57,8 +78,8 @@ class MainActivity : ComponentActivity() {
         DataSource.database = database
         DataSource.context = context
 
-        DataSource.chapters = getJsonDecodedChapters(context, "en")
-        DataSource.quran = getJsonDecodedQuran(context, "en")
+        DataSource.chapters = getJsonDecodedChapters(context = context, lang = "english")
+        DataSource.quran = getJsonDecodedQuran(context = context, lang = "english")
 
         NavHost(navController = navController, startDestination = "home") {
             composable("home") {
@@ -79,6 +100,10 @@ class MainActivity : ComponentActivity() {
 
             composable("settings") {
                 SettingsScreen()
+            }
+
+            composable("about") {
+                AboutScreen()
             }
         }
     }

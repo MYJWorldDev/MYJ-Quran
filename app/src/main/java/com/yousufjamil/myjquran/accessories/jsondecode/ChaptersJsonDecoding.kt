@@ -1,6 +1,7 @@
 package com.yousufjamil.myjquran.accessories.jsondecode
 
 import android.content.Context
+import com.yousufjamil.myjquran.accessories.getLangCode
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -16,8 +17,9 @@ data class SurahChapters(
     val link: String
 )
 
-fun getJsonDecodedChapters(context: Context, langCode: String): List<SurahChapters> {
-    val fileName = "text/$langCode/chapters${langCode.replaceFirstChar { it.uppercase() }}.json"
+fun getJsonDecodedChapters(context: Context, lang: String): List<SurahChapters> {
+    val langCode = getLangCode(lang)
+    val fileName = "text/$lang/chapters${langCode.replaceFirstChar { it.uppercase() }}.json"
     val jsonString = context.assets.open(fileName).bufferedReader().use { it.readText() }
     val chapters = Json.decodeFromString<List<SurahChapters>>(jsonString)
     return chapters

@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,7 +40,7 @@ fun HomeScreen() {
         HomeScreenItemData(
             title = "Bookmarks",
             description = "View your bookmarks.",
-            icon = Icons.Default.DateRange,
+            icon = Icons.Default.Star,
             onClick = {
                 navController.navigate("bookmarks")
             }
@@ -44,7 +48,7 @@ fun HomeScreen() {
         HomeScreenItemData(
             title = "Surah List",
             description = "Choose surah to read.",
-            icon = Icons.Default.DateRange,
+            icon = Icons.AutoMirrored.Default.List,
             onClick = {
                 navController.navigate("surahSelect")
             }
@@ -52,9 +56,17 @@ fun HomeScreen() {
         HomeScreenItemData(
             title = "Settings",
             description = "Change your settings.",
-            icon = Icons.Default.DateRange,
+            icon = Icons.Default.Settings,
             onClick = {
                 navController.navigate("settings")
+            }
+        ),
+        HomeScreenItemData(
+            title = "Info",
+            description = "Info about sources.",
+            icon = Icons.Default.Info,
+            onClick = {
+                navController.navigate("about")
             }
         )
     )
@@ -83,11 +95,5 @@ fun HomeScreen() {
                 onClick = it.onClick
             )
         }
-
-        Text(
-            text = "Text sourced from: risan/quran-json on GitHub",
-            color = Color.White,
-            modifier = Modifier.padding(top = 16.dp)
-        )
     }
 }
