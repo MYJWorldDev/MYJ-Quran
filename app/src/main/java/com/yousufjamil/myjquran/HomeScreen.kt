@@ -19,8 +19,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.yousufjamil.myjquran.accessories.HomeScreenItem
-import com.yousufjamil.myjquran.accessories.HomeScreenItemData
+import com.yousufjamil.myjquran.accessories.SelectionListItem
+import com.yousufjamil.myjquran.accessories.SelectionListItemData
 import com.yousufjamil.myjquran.data.DataSource
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -29,7 +29,7 @@ fun HomeScreen() {
     val navController = DataSource.navController
 
     val homeScreenItemList = listOf(
-        HomeScreenItemData(
+        SelectionListItemData(
             title = "Resume",
             description = "Resume where you left off.",
             icon = Icons.Default.DateRange,
@@ -37,7 +37,7 @@ fun HomeScreen() {
                 navController.navigate("quran")
             }
         ),
-        HomeScreenItemData(
+        SelectionListItemData(
             title = "Bookmarks",
             description = "View your bookmarks.",
             icon = Icons.Default.Star,
@@ -45,7 +45,7 @@ fun HomeScreen() {
                 navController.navigate("bookmarks")
             }
         ),
-        HomeScreenItemData(
+        SelectionListItemData(
             title = "Surah List",
             description = "Choose surah to read.",
             icon = Icons.AutoMirrored.Default.List,
@@ -53,7 +53,7 @@ fun HomeScreen() {
                 navController.navigate("surahSelect")
             }
         ),
-        HomeScreenItemData(
+        SelectionListItemData(
             title = "Settings",
             description = "Change your settings.",
             icon = Icons.Default.Settings,
@@ -61,7 +61,7 @@ fun HomeScreen() {
                 navController.navigate("settings")
             }
         ),
-        HomeScreenItemData(
+        SelectionListItemData(
             title = "Info",
             description = "Info about sources.",
             icon = Icons.Default.Info,
@@ -88,7 +88,7 @@ fun HomeScreen() {
         )
 
         homeScreenItemList.forEach {
-            HomeScreenItem(
+            SelectionListItem(
                 title = it.title,
                 description = it.description,
                 icon = it.icon,

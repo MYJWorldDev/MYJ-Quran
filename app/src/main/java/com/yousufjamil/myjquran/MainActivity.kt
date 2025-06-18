@@ -38,7 +38,8 @@ import com.yousufjamil.myjquran.ui.theme.MYJQuranTheme
 class MainActivity : ComponentActivity() {
     lateinit var navController: NavHostController
     lateinit var database: MYJQuranDB
-    lateinit var context: Context
+    var langName: String = "english"
+    var langCode: String = "english"
 
 
 
@@ -49,14 +50,25 @@ class MainActivity : ComponentActivity() {
 
             navController = rememberNavController()
             database = DatabaseProvider.getDatabase(this)
-            context = this
+            val context = this
 
             LaunchedEffect (Unit) {
+                if (database.languagesDao.getAllLanguages().size != 1) {
+                    for (language in database.languagesDao.getAllLanguages()) {
+                        database.languagesDao.deleteLanguage(language)
+                    }
+                }
                 if (database.languagesDao.getAllLanguages().isEmpty()) {
                     database.languagesDao.insertLanguage(
                         getDefaultLang(this@MainActivity)
                     )
                 }
+
+                langName = database.languagesDao.getAllLanguages()[0].languageName
+                langCode = database.languagesDao.getAllLanguages()[0].languageCode
+
+                DataSource.chapters = getJsonDecodedChapters(context = context, lang = langName)
+                DataSource.quran = getJsonDecodedQuran(context = context, lang = langName)
             }
 
             MYJQuranTheme {
@@ -76,10 +88,11 @@ class MainActivity : ComponentActivity() {
     fun Navigation(navController: NavHostController) {
         DataSource.navController = navController
         DataSource.database = database
-        DataSource.context = context
 
-        DataSource.chapters = getJsonDecodedChapters(context = context, lang = "english")
-        DataSource.quran = getJsonDecodedQuran(context = context, lang = "english")
+        val context = this
+
+        DataSource.chapters = getJsonDecodedChapters(context = context, lang = langName)
+        DataSource.quran = getJsonDecodedQuran(context = context, lang = langName)
 
         NavHost(navController = navController, startDestination = "home") {
             composable("home") {

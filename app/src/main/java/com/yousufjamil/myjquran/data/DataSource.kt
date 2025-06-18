@@ -26,8 +26,6 @@ object DataSource {
 
     lateinit var quran: List<SurahQuran>
 
-    lateinit var context: Context
-
     val uthmaniFont = FontFamily(
         Font(R.font.uthmani)
     )

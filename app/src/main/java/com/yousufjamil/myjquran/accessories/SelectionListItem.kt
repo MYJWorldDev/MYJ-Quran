@@ -27,10 +27,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun HomeScreenItem(
+fun SelectionListItem(
     title: String,
+    multilineTitle: Boolean = false,
     description: String,
     icon: ImageVector? = null,
+    onIconClick: () -> Unit = {},
     onClick: () -> Unit
 ) {
     Row(
@@ -52,7 +54,10 @@ fun HomeScreenItem(
                 contentDescription = "Icon",
                 modifier = Modifier
                     .size(50.dp)
-                    .padding(end = 16.dp),
+                    .padding(end = 16.dp)
+                    .clickable {
+                        onIconClick()
+                    },
                 colorFilter = ColorFilter.tint(Color.White)
             )
         }
@@ -65,11 +70,13 @@ fun HomeScreenItem(
                 color = Color.White,
                 modifier = Modifier.padding(bottom = 4.dp),
                 fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                softWrap = false,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 30.sp
+                fontSize = 30.sp,
+                lineHeight = 40.sp,
+                maxLines = if (multilineTitle) Int.MAX_VALUE else 1,
+                softWrap = multilineTitle,
+                overflow = if (multilineTitle) TextOverflow.Clip else TextOverflow.Ellipsis
             )
+
             Text(
                 text = description,
                 color = Color.Gray,
@@ -82,7 +89,7 @@ fun HomeScreenItem(
     }
 }
 
-data class HomeScreenItemData(
+data class SelectionListItemData(
     val title: String,
     val description: String,
     val icon: ImageVector? = null,
@@ -91,16 +98,16 @@ data class HomeScreenItemData(
 
 @Preview(showBackground = true)
 @Composable
-fun HomeScreenItemPreview() {
+fun SelectionListItemPreview() {
     Column {
-        HomeScreenItem(
+        SelectionListItem(
             title = "Lorem ipsum",
             description = "Sample text for preview.",
             icon = Icons.Default.ThumbUp,
             onClick = {}
         )
 
-        HomeScreenItem(
+        SelectionListItem(
             title = "Lorem ipsum",
             description = "Sample text for preview.",
             onClick = {}

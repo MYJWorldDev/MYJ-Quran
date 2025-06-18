@@ -1,7 +1,9 @@
 package com.yousufjamil.myjquran.featurescreens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,12 +11,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -37,18 +42,23 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.yousufjamil.myjquran.accessories.VerseDisplay
 import com.yousufjamil.myjquran.accessories.jsondecode.Verse
 import com.yousufjamil.myjquran.data.DataSource
-import com.yousufjamil.myjquran.data.DataSource.context
 import com.yousufjamil.myjquran.data.dataStore
+import com.yousufjamil.myjquran.data.database.BookmarksItemDB
 import com.yousufjamil.myjquran.data.database.LanguageItemDB
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 //@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun QuranScreen() {
+    val context = LocalContext.current
+
     val dataStore = context.dataStore
     val coroutineScope = rememberCoroutineScope()
     val state = rememberLazyListState()
@@ -94,6 +104,7 @@ fun QuranScreen() {
             .collectLatest { index ->
                 context.dataStore.edit { preferences ->
                     preferences[stringPreferencesKey("lastReadVerse")] = (index + 1).toString()
+                    lastReadVerse.value = (index + 1).toString()
                 }
             }
     }
@@ -156,7 +167,7 @@ fun QuranScreen() {
                 )
             }
         } else {
-            Spacer(modifier = Modifier.padding(8.dp))
+            Spacer(modifier = Modifier.padding(start = 72.dp))
         }
     }
 
@@ -209,6 +220,33 @@ fun QuranScreen() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 PrevButton()
+
+                Row (
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Image(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Bookmark",
+                        colorFilter = ColorFilter.tint(Color.White),
+                        modifier = Modifier
+                            .clickable {
+                                coroutineScope.launch {
+                                    DataSource.database.bookmarksDao.insertBookmark(
+                                        BookmarksItemDB(
+                                            bookmarkName = "Surah ${DataSource.quran[lastReadSurah.value.toInt() - 1].name}, Verse ${lastReadVerse.value}",
+                                            bookmarkTime = SimpleDateFormat("yyMMddHHmm", Locale.getDefault()).format(Date()).toLong(),
+                                            surahNo = lastReadSurah.value.toInt(),
+                                            verseNo = lastReadVerse.value.toInt()
+                                        )
+                                    )
+
+                                    Toast.makeText(context, "Bookmarked", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                    )
+                }
+
                 NextButton()
             }
         }
