@@ -3,7 +3,9 @@ package com.yousufjamil.myjquran.featurescreens
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -15,11 +17,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.yousufjamil.myjquran.accessories.getLangCode
 import com.yousufjamil.myjquran.accessories.jsondecode.getJsonDecodedChapters
 import com.yousufjamil.myjquran.accessories.jsondecode.getJsonDecodedQuran
 import com.yousufjamil.myjquran.data.DataSource
+import com.yousufjamil.myjquran.data.dataStore
 import com.yousufjamil.myjquran.data.database.LanguageItemDB
 import kotlinx.coroutines.launch
 
@@ -36,6 +42,53 @@ fun SettingsScreen() {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
+        Text(
+            text = "Font",
+            color = Color.White,
+            fontFamily = DataSource.alKalamiFont,
+            fontSize = 60.sp,
+            lineHeight = 60.sp,
+            textAlign = TextAlign.Center
+        )
+
+        Text(
+            text = "Uthmani",
+            color = Color.White,
+            fontFamily = DataSource.alKalamiFont,
+            fontSize = 30.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .clickable {
+                    coroutineScope.launch {
+                        context.dataStore.edit { preferences ->
+                            preferences[stringPreferencesKey("favFont")] = "uthmani"
+                        }
+                    }
+
+                    DataSource.navController.popBackStack()
+                }
+        )
+
+        Text(
+            text = "Indopak",
+            color = Color.White,
+            fontFamily = DataSource.alKalamiFont,
+            fontSize = 30.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .clickable {
+                    coroutineScope.launch {
+                        context.dataStore.edit { preferences ->
+                            preferences[stringPreferencesKey("favFont")] = "indopak"
+                        }
+                    }
+
+                    DataSource.navController.popBackStack()
+                }
+        )
+
+        Spacer(modifier = Modifier.height(40.dp))
+
         Text(
             text = "Translation Language",
             color = Color.White,
