@@ -1,5 +1,7 @@
 package com.yousufjamil.myjquran.featurescreens
 
+import android.media.AudioAttributes
+import android.media.MediaPlayer
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -18,14 +21,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,12 +40,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.yousufjamil.myjquran.R
 import com.yousufjamil.myjquran.accessories.VerseDisplay
 import com.yousufjamil.myjquran.accessories.jsondecode.Verse
 import com.yousufjamil.myjquran.data.DataSource
@@ -58,6 +70,7 @@ import java.util.Locale
 @Composable
 fun QuranScreen() {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     val dataStore = context.dataStore
     val coroutineScope = rememberCoroutineScope()
@@ -70,6 +83,59 @@ fun QuranScreen() {
 
     val favFont = remember { mutableStateOf("uthmani") }
     val favFontFile = remember { mutableStateOf(DataSource.uthmaniFont) }
+
+    var audioInitialized by remember { mutableStateOf(false) }
+    var playingAudio by remember { mutableStateOf(false) }
+    val mediaPlayer = remember { MediaPlayer() }
+    var currentAudioUrl =
+        "https://download.quranicaudio.com/quran/sa3d_al-ghaamidi/complete/${
+            lastReadSurah.value.padStart(
+                3,
+                '0'
+            )
+        }.mp3"
+
+    DisposableEffect(lifecycleOwner) {
+        mediaPlayer.setAudioAttributes(
+            AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .build()
+        )
+        mediaPlayer.setScreenOnWhilePlaying(true)
+
+        mediaPlayer.setOnPreparedListener { mp ->
+            mp.start()
+            playingAudio = true
+            Toast.makeText(context, "Playing audio...", Toast.LENGTH_SHORT).show()
+            println("MediaPlayer prepared and started.")
+        }
+
+        mediaPlayer.setOnCompletionListener {
+            playingAudio = false
+            audioInitialized = false
+            mediaPlayer.reset()
+            Toast.makeText(context, "Audio finished.", Toast.LENGTH_SHORT).show()
+            println("MediaPlayer playback completed.")
+        }
+
+        mediaPlayer.setOnErrorListener { mp, what, extra ->
+            println("Error playing audio: what=$what, extra=$extra")
+            Toast.makeText(context, "Error playing audio: $what", Toast.LENGTH_LONG).show()
+            playingAudio = false
+            audioInitialized = false
+            mp.reset()
+            true
+        }
+
+        onDispose {
+            if (mediaPlayer.isPlaying) {
+                mediaPlayer.stop()
+            }
+            mediaPlayer.release()
+            println("MediaPlayer released on dispose")
+        }
+    }
 
     LaunchedEffect(Unit) {
         lang.value = DataSource.database.languagesDao.getAllLanguages()
@@ -127,6 +193,28 @@ fun QuranScreen() {
                         lastReadVerse.value = "1"
                         verses.value = DataSource.quran[nextSurah - 1].verses
                         state.scrollToItem(0)
+                        currentAudioUrl =
+                            "https://download.quranicaudio.com/quran/sa3d_al-ghaamidi/complete/${
+                                lastReadSurah.value.padStart(
+                                    3,
+                                    '0'
+                                )
+                            }.mp3"
+
+                        try {
+                            mediaPlayer.reset()
+                            playingAudio = false
+                            audioInitialized = false
+                            mediaPlayer.setAudioAttributes(
+                                AudioAttributes.Builder()
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                                    .build()
+                            )
+                            mediaPlayer.setScreenOnWhilePlaying(true)
+                        } catch (e: Exception) {
+                            println("Exception in NextButton: ${e.message}")
+                        }
                     }
                 }
             ) {
@@ -157,6 +245,29 @@ fun QuranScreen() {
                         lastReadVerse.value = "1"
                         verses.value = DataSource.quran[prevSurah - 1].verses
                         state.scrollToItem(0)
+
+                        currentAudioUrl =
+                            "https://download.quranicaudio.com/quran/sa3d_al-ghaamidi/complete/${
+                                lastReadSurah.value.padStart(
+                                    3,
+                                    '0'
+                                )
+                            }.mp3"
+
+                        try {
+                            mediaPlayer.reset()
+                            playingAudio = false
+                            audioInitialized = false
+                            mediaPlayer.setAudioAttributes(
+                                AudioAttributes.Builder()
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                                    .build()
+                            )
+                            mediaPlayer.setScreenOnWhilePlaying(true)
+                        } catch (e: Exception) {
+                            println("Exception in PrevButton: ${e.message}")
+                        }
                     }
                 }
             ) {
@@ -221,7 +332,7 @@ fun QuranScreen() {
             ) {
                 PrevButton()
 
-                Row (
+                Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
@@ -235,7 +346,10 @@ fun QuranScreen() {
                                     DataSource.database.bookmarksDao.insertBookmark(
                                         BookmarksItemDB(
                                             bookmarkName = "Surah ${DataSource.quran[lastReadSurah.value.toInt() - 1].name}, Verse ${lastReadVerse.value}",
-                                            bookmarkTime = SimpleDateFormat("yyMMddHHmm", Locale.getDefault()).format(Date()).toLong(),
+                                            bookmarkTime = SimpleDateFormat(
+                                                "yyMMddHHmm",
+                                                Locale.getDefault()
+                                            ).format(Date()).toLong(),
                                             surahNo = lastReadSurah.value.toInt(),
                                             verseNo = lastReadVerse.value.toInt()
                                         )
@@ -245,6 +359,89 @@ fun QuranScreen() {
                                 }
                             }
                     )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    if (!playingAudio) {
+                        Image(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = "Play Audio",
+                            colorFilter = ColorFilter.tint(Color.White),
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clickable {
+                                    try {
+                                        if (mediaPlayer.isPlaying) {
+                                            println("Play clicked but already playing. No action.")
+                                            Toast.makeText(
+                                                context,
+                                                "Audio is already playing.",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else if (audioInitialized && mediaPlayer.currentPosition > 0) {
+                                            mediaPlayer.start()
+                                            playingAudio = true
+                                            Toast.makeText(
+                                                context,
+                                                "Resuming audio",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            println("Resuming playback from paused state.")
+                                        } else {
+                                            Toast.makeText(
+                                                context,
+                                                "Preparing audio for Surah ${lastReadSurah.value}",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            mediaPlayer.reset()
+                                            mediaPlayer.setDataSource(currentAudioUrl)
+                                            mediaPlayer.prepareAsync()
+                                            audioInitialized = true
+                                            println("Starting new playback: $currentAudioUrl")
+                                        }
+                                    } catch (e: Exception) {
+                                        Toast.makeText(
+                                            context,
+                                            "Error setting up audio: " + e.message,
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                        println("Exception in Play/Resume: ${e.message}")
+                                        playingAudio = false
+                                        audioInitialized = false
+                                        mediaPlayer.reset()
+                                    }
+                                }
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(R.drawable.pause),
+                            contentDescription = "Pause Audio",
+                            colorFilter = ColorFilter.tint(Color.White),
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clickable {
+                                    try {
+                                        if (mediaPlayer.isPlaying) {
+                                            mediaPlayer.pause()
+                                            playingAudio = false
+                                            Toast.makeText(
+                                                context,
+                                                "Audio paused",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            println("Pausing playback.")
+                                        }
+                                    } catch (e: Exception) {
+                                        Toast.makeText(
+                                            context,
+                                            "Error pausing audio: " + e.message,
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        println("Exception in Pause: ${e.message}")
+                                    }
+                                }
+                        )
+                    }
                 }
 
                 NextButton()
